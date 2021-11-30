@@ -1,5 +1,6 @@
 import numpy as np
 from resources.tree_classes import kLPtree_classic,kLPtree_total
+from resources.training import best_tree_no_rep, best_tree_no_rep_v2, best_tree,best_tree_v2
 import time
 
 
@@ -185,14 +186,14 @@ def test_random_sample_from_random_simulated_tree(N=10000, p=0.3):
 def learn_from_random_tree(n, k, noeuddict, obj_list_bin, sample_size = 3000, p=0.3):
 
     origin_tree, PT = generate_kLPtree_classic(n, k)
-    origin_tree_obj = kLPtree_classic([],origin_tree)
+    origin_tree_obj = kLPtree_classic([],origin_tree,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
     origin_tree_obj.modify_PT(PT)
 
     sample = random_sample_from_tree(origin_tree_obj, sample_size, p)
-    learned_tree_1 = best_tree_no_rep_v2(sample, num_of_attrs = n)
-    learned_tree_2 = best_tree_no_rep(sample, num_of_attrs = n)
-    learned_tree_obj_1 = kLPtree_classic(sample,learned_tree_1)
-    learned_tree_obj_2 = kLPtree_classic(sample,learned_tree_2)
+    learned_tree_1 = best_tree_no_rep_v2(sample, num_of_attrs = n, noeuddict = noeuddict)
+    learned_tree_2 = best_tree_no_rep(sample, noeuddict = noeuddict)
+    learned_tree_obj_1 = kLPtree_classic(sample,learned_tree_1,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
+    learned_tree_obj_2 = kLPtree_classic(sample,learned_tree_2,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
     
 
     rloss_1 = rloss_montecarlo(learned_tree_obj_1, origin_tree_obj, sample_size=sample_size, p=0.3, MCsize=100000)
@@ -203,24 +204,24 @@ def learn_from_random_tree(n, k, noeuddict, obj_list_bin, sample_size = 3000, p=
 def learn_from_random_tree_parallel(n, k,  noeuddict, obj_list_bin, sample_size = 3000, p=0.3):
 
     origin_tree_1, PT_1 = generate_kLPtree_classic(n, k)
-    origin_tree_obj_1 = kLPtree_classic([],origin_tree_1)
+    origin_tree_obj_1 = kLPtree_classic([],origin_tree_1,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
     origin_tree_obj_1.modify_PT(PT_1)
     
-    origin_tree_2, PT_2 = generate_kLPtree_total()
-    origin_tree_obj_2 = kLPtree_total([],origin_tree_2)
+    origin_tree_2, PT_2 = generate_kLPtree_total(n, noeuddict=noeuddict)
+    origin_tree_obj_2 = kLPtree_total([],origin_tree_2,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
     origin_tree_obj_2.modify_PT(PT_2)
 
     sample12 = random_sample_from_tree(origin_tree_obj_1, sample_size, p)
     sample34 = random_sample_from_tree(origin_tree_obj_2, sample_size, p)
     
-    learned_tree_1 = best_tree_no_rep_v2(sample12, num_of_attrs = n)
-    learned_tree_2 = best_tree_no_rep(sample12)
-    learned_tree_3 = best_tree(sample34)
-    learned_tree_4 = best_tree_v2(sample34,n_attrs = n)
-    learned_tree_obj_1 = kLPtree_classic(sample12,learned_tree_1)
-    learned_tree_obj_2 = kLPtree_classic(sample12,learned_tree_2)
-    learned_tree_obj_3 = kLPtree_total(sample34,learned_tree_3)
-    learned_tree_obj_4 = kLPtree_total(sample34,learned_tree_4)
+    learned_tree_1 = best_tree_no_rep_v2(sample12, num_of_attrs = n,noeuddict = noeuddict)
+    learned_tree_2 = best_tree_no_rep(sample12,noeuddict = noeuddict)
+    learned_tree_3 = best_tree(sample34,noeuddict=noeuddict,n_attrs=n)
+    learned_tree_4 = best_tree_v2(sample34,noeuddict=noeuddict,n_attrs=n)
+    learned_tree_obj_1 = kLPtree_classic(sample12,learned_tree_1,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
+    learned_tree_obj_2 = kLPtree_classic(sample12,learned_tree_2,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
+    learned_tree_obj_3 = kLPtree_total(sample34,learned_tree_3,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
+    learned_tree_obj_4 = kLPtree_total(sample34,learned_tree_4,num_of_attrs=n,noeuddict=noeuddict,obj_list_bin=obj_list_bin)
     
     rloss_1,rloss_2 = rloss_montecarlo_parallel(learned_tree_obj_1,learned_tree_obj_2, origin_tree_obj_1, sample_size=sample_size, p=0.3, MCsize=2000)
     rloss_3,rloss_4 = rloss_montecarlo_parallel(learned_tree_obj_3, learned_tree_obj_4, origin_tree_obj_2, sample_size=sample_size, p=0.3, MCsize=2000)

@@ -2,14 +2,14 @@ import numpy as np
 
 
 class kLPtree_classic:
-    def __init__(self, H, noeudnamelist, num_of_attrs, noeuddict, obj_list):
+    def __init__(self, H, noeudnamelist, num_of_attrs, noeuddict, obj_list_bin):
         if len(H)!=0:
             self.noeud_dict = noeuddict
             self.noeud_names = noeudnamelist
             self.noeud_list = [noeuddict[x] for x in noeudnamelist]
             self.preference_count = np.array([np.array([np.sum(H[self.noeud_list[j][i]]) for i in range(len(self.noeud_list[j]))]) for j in range(len(self.noeud_list))], dtype=object)
             self.preference_table = np.array([np.flip(np.argsort(self.preference_count[j])) for j in range(len(noeudnamelist))], dtype=object)
-            self.obj_list = obj_list
+            self.obj_list = obj_list_bin
             self.n = len(noeudnamelist)
             self.num_attrs = num_of_attrs
             self.rank_from_tree()
@@ -64,7 +64,7 @@ class kLPtree_classic:
         return R_mean
 
 class kLPtree_total:
-    def __init__(self, H, noeudnamelist, num_of_attrs, noeuddict, obj_list):
+    def __init__(self, H, noeudnamelist, num_of_attrs, noeuddict, obj_list_bin):
         if len(H)!=0:
             self.noeud_dict = noeuddict
             self.noeud_names = noeudnamelist

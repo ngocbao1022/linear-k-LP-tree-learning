@@ -1,7 +1,44 @@
 import numpy as np
-from resources.testing import all_trees_no_CP_respect_order,eligible_trees,recursive_no_CP_respect_order
 from resources.initial import score,score_conditional,objlist_to_binary
 from resources.tree_classes import *
+
+def remove_all_noeuds_contain(x, noeud_list):
+    new_list = []
+    for N in noeud_list:
+        not_in = True 
+        for e in x:
+            not_in *= (list(N).count(e)==0)
+        if not_in: new_list += [N]
+    return new_list
+
+def recursive_no_CP_respect_order(sequence, noeud_list):
+    # case 1 : x = [a] => trees = [[a]]
+    # case 2 : x = [ab, a, b] => trees = [[ab], [a,b]]
+    # case 3 : for noeud in list : chon vi tri bat dau va right sequence, lua chon thuat toan de cut list
+    sequence_list = []
+    if len(noeud_list)==0:
+        sequence_list = [sequence]
+    elif len(noeud_list)==1:
+        sequence_list = [sequence + noeud_list]
+    else:
+        for i in range(len(noeud_list)):
+            base_sequence = sequence + [noeud_list[i]]
+            sequence_list += recursive_no_CP_respect_order(base_sequence, remove_all_noeuds_contain(noeud_list[i],noeud_list[i+1:]))
+    return sequence_list
+
+def eligible_trees(tree_list, num_of_attrs):
+    new_tree_list = []
+    for tree in tree_list:
+        attrs = set({})
+        for N in tree:
+            attrs = attrs|set(N)
+        if len(attrs)==num_of_attrs:
+            new_tree_list += [tree]
+    return new_tree_list
+
+def all_trees_no_CP_respect_order(noeud_list, num_of_attrs):
+    tree_list = recursive_no_CP_respect_order([],noeud_list)
+    return eligible_trees(tree_list, num_of_attrs)
 
 # TRAINING - tree from algo
 def order(H, noeuddict):
@@ -85,8 +122,8 @@ def best_tree_no_rep(H, noeuddict):
     return tree
 
 # TRAINING - tree no rep from algo
-def best_tree_no_rep_v2(H, noeuddict, n_attrs):
-    obj_list_bin = objlist_to_binary(n_attrs)
+def best_tree_no_rep_v2(H, noeuddict, num_of_attrs):
+    obj_list_bin = objlist_to_binary(num_of_attrs)
     s_list = []
     for x in noeuddict.values():
         s_list += [score(H,x)]
@@ -95,10 +132,10 @@ def best_tree_no_rep_v2(H, noeuddict, n_attrs):
     keys = list(noeuddict.keys())
     for i in sort:
         noeud_list += [keys[i]]
-    tree_list = all_trees_no_CP_respect_order(noeud_list,n_attrs)
+    tree_list = all_trees_no_CP_respect_order(noeud_list,num_of_attrs)
     mean_rank_list = []
     for tree in tree_list:
-        tree_obj = kLPtree_classic(H,tree,num_of_attrs = n_attrs, noeuddict = noeuddict, obj_list = obj_list_bin)
+        tree_obj = kLPtree_classic(H,tree,num_of_attrs = num_of_attrs, noeuddict = noeuddict, obj_list_bin = obj_list_bin)
         mean_rank_list += [tree_obj.mean_empirical_rank(H)]
     arg = np.argmin(mean_rank_list)
     return tree_list[arg]
